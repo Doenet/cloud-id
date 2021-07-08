@@ -1,0 +1,31 @@
+{
+  "name": "@doenet/id",
+  "version": "1.0.0",
+  "description": "Doenet authentication service",
+  "main": "index.js",
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "preserve": "npm run build",
+    "serve": "cross-env NODE_ENV=development concurrently \"npx tsc --watch\" \"npx nodemon -q dist/index.js\"",
+    "prestart": "npm run build",
+    "start": "cross-env NODE_ENV=production node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jim Fowler <kisonecat@gmail.com>",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "@types/body-parser": "^1.19.1",
+    "@types/express": "^4.17.13",
+    "@types/node": "^16.0.1",
+    "body-parser": "^1.19.0",
+    "cross-env": "^7.0.3",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "helmet": "^4.6.0",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.3.5"
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.0"
+  }
+}
