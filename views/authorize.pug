@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1 Authorize
+  p <code>#{redirectHost}</code> wants to access your <code>#{host}</code> account.
+  p This will allow <code>#{redirectHost}</code> to
+  ul
+    li submit and retrieve scores for the work you complete on <code>#{redirectHost}</code> and
+    li upload and download page state information so that your work on <code>#{redirectHost}</code> is saved at  <code>#{host}</code>.
+  p <code>#{redirectHost}</code> will <strong>not</strong> be provided with your email address or with your name.
+  .row
+    a.btn.btn-primary(href=acceptUrl, role='button') Accept
+    a.btn.btn-secondary(href=declineUrl, role='button') Decline
+
+  
