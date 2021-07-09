@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 
 const client = createNodeRedisClient();
 
-export async function post(req: Request, res: Response) {
+export async function post(req: Request, res: Response, next: NextFunction) : Promise<void> {
   try {
     const emails = parse(req.params.email);
     const address = emails[0].address;
@@ -46,18 +46,17 @@ export async function post(req: Request, res: Response) {
 
     res.sendStatus(200);
   } catch (e) {
-    res.status(500).send(e.toString());
-    return;
+    next(e);
   }
   
   return;
 }
 
-export async function verify(req: Request, res: Response) {
-  const uuid = req.params.uuid;
+export async function verify(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const nonce = req.params.nonce;
   
-  if (!isUuid(uuid)) {
-    res.status(500).send('Missing uuid');
+  if (!isUuid(nonce)) {
+    next(new Error('Missing nonce'));
     return;
   }
 
@@ -67,25 +66,45 @@ export async function verify(req: Request, res: Response) {
 
     res.locals.email = address;
   } catch (e) {
-    res.status(500).send(e.toString());
+    next(e);
     return;
   }
 
   const result = await client.multi()
-        .get(`verify-email:${uuid}`)
-        .del(`verify-email:${uuid}`).exec();
+        .get(`verify-email:${nonce}`)
+        .del(`verify-email:${nonce}`).exec();
   
   if (result[1] === 0) {
-    res.status(500).send('Invalid nonce');
+    next(new Error('Invalid nonce'));    
     return;
   }
 
   if (result[0] !== res.locals.email) {
-    res.status(500).send('Provided email does not match the email associated with the nonce');
+    next(new Error('Provided email does not match the email associated with the nonce'));
     return;
   }  
   
   // now i am authenticated so i should be logged in with a cookie
+  const userResult = await client.multi()
+        .setnx(`email:${res.locals.email}`, uuid())
+        .get(`email:${res.locals.email}`)
+        .exec();
+  
+  const userId = userResult[1];
+  
+  if (!userId) {
+    next(new Error('Could not find or produce a user id'));
+    return;    
+  }
+  
+  client.hset(`user:${userId}`, ['email', res.locals.email]);
+  
+  res.cookie('userId', userId, {
+    signed: true,
+    maxAge: 52 * 604800000,
+    secure: true,
+    httpOnly: true,
+  });
   
   res.render('verify');
   

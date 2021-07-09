@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1 Logged out
+  if email
+    p You have been logged out of the <code>#{host}</code> account registered to email <code>#{email}</code>.
+  else
+    p You are not logged into <code>#{host}</code>.
+  if redirect_url 
+    .row
+      a.btn.btn-primary(href=redirect_url, role='button') Return
+
+
+  
