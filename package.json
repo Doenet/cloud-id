@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.2",
+    "@types/cors": "^2.8.12",
     "@types/jsonwebtoken": "^8.5.4",
     "@types/nodemailer": "^6.4.4",
     "concurrently": "^6.2.0"
