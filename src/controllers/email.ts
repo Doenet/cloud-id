@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { createNodeRedisClient } from 'handy-redis';
 import { URL } from 'url';
 import dotenv from 'dotenv';
@@ -31,7 +31,7 @@ export async function post(req: Request, res: Response, next: NextFunction) : Pr
     const nonce = uuid();
 
     // One day before the verification nonce expires
-    await client.setex(`verify-email:${nonce}`, 24 * 60 * 60, address);
+    await client.setex(`nonce:${nonce}`, 24 * 60 * 60, address);
 
     const verifyUrl = new URL(req.protocol + '://' + req.get('host'));
     verifyUrl.pathname = `/email/${address}/${nonce}`;
@@ -71,8 +71,8 @@ export async function verify(req: Request, res: Response, next: NextFunction): P
   }
 
   const result = await client.multi()
-        .get(`verify-email:${nonce}`)
-        .del(`verify-email:${nonce}`).exec();
+        .get(`nonce:${nonce}`)
+        .del(`nonce:${nonce}`).exec();
   
   if (result[1] === 0) {
     next(new Error('Invalid nonce'));    
@@ -83,21 +83,30 @@ export async function verify(req: Request, res: Response, next: NextFunction): P
     next(new Error('Provided email does not match the email associated with the nonce'));
     return;
   }  
+
+  // create a fresh account...
+  let userId = uuid();
+  // but if we're already logged in, use that
+  if (req.signedCookies.userId) {
+    userId = req.signedCookies.userId;
+  }
   
   // now i am authenticated so i should be logged in with a cookie
   const userResult = await client.multi()
-        .setnx(`email:${res.locals.email}`, uuid())
+        .setnx(`email:${res.locals.email}`, userId)
         .get(`email:${res.locals.email}`)
         .exec();
-  
-  const userId = userResult[1];
+
+  // prefer the userId from a previous account with that email address
+  userId = userResult[1];
   
   if (!userId) {
     next(new Error('Could not find or produce a user id'));
     return;    
   }
-  
-  client.hset(`user:${userId}`, ['email', res.locals.email]);
+
+  // add the email address to the list for this user
+  client.sadd(`user-email:${userId}`, res.locals.email);
   
   res.cookie('userId', userId, {
     signed: true,

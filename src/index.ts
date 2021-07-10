@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
@@ -6,6 +6,7 @@ import Logger from "./logger";
 import morganMiddleware from './morgan-middleware';
 import path from 'path';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 import getAuthorize from './controllers/authorize';
 import postToken from './controllers/token';
@@ -32,6 +33,21 @@ app.use(
 );
 
 app.use(helmet());
+
+const myCors = cors({
+  credentials: true,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  origin(origin, callback) {
+    if (!origin) return callback(null, true);
+    return callback(null, true);
+  },
+});
+
+// preflight for all routes
+app.options('*', myCors);
+app.use(myCors);
+app.post(myCors);
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -42,20 +58,14 @@ app.post('/token', postToken);
 app.post('/email/:email', postEmail);
 app.get('/email/:email/:nonce', verifyEmail);
 
-app.use(function(req, res, next){
-  // the status option, or res.statusCode = 404
-  // are equivalent, however with the option we
-  // get the "status" local available as well
-  res.render('404', { status: 404, url: req.url });
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.status(404).render('404', { status: 404, url: req.url });
 });
 
-app.use(function(err, req, res, next){
-  // we may use properties of the error object
-  // here and next(err) appropriately, or if
-  // we possibly recovered from the error, simply next().
-  res.render('500', {
-      status: err.status || 500
-    , error: err
+app.use((err: any, req: Request, res: Response) => {
+  res.status(500).render('500', {
+    status: err.status || 500,
+    error: err
   });
 });
 
