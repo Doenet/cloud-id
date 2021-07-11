@@ -1,7 +1,7 @@
 with import <nixpkgs> {};
 
 mkYarnPackage rec {
-    name = "circle-z-backend";
+    name = "id-server";
     src = ./.;
     packageJSON = ./package.json;
     yarnLock = ./yarn.lock;
@@ -11,9 +11,9 @@ mkYarnPackage rec {
     '';
 
     meta = with pkgs.lib; {
-      description = "Ross Program Circle Z webservices";
+      description = "id.doenet.cloud webservices";
       license = licenses.agpl3;
-      homepage = "https://github.com/rossprogram/circle-z-backend";
+      homepage = "https://github.com/Doenet/cloud-id";
       maintainers = with maintainers; [ kisonecat ];
       platforms = platforms.linux;
     };
