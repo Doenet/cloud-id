@@ -78,7 +78,7 @@ export default async function post(req: Request, res: Response, next: NextFuncti
 
   const expires_in = 365 * 86400;
   const access_token = jwt.sign(payload,
-                                process.env.TOKEN_SECRET,
+                                req.app.get('token-secret'),
                                 { expiresIn: `${expires_in}s` });
 
   const envelope = {

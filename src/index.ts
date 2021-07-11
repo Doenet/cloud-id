@@ -18,6 +18,7 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 const app: Express = express();
 
+app.set('token-secret', process.env.TOKEN_SECRET);
 app.use(cookieParser(process.env.SECRET));
 
 // I am behind nginx
@@ -27,6 +28,8 @@ app.use(morganMiddleware);
 
 app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "pug");
+
+
 
 app.use(
     express.static(path.join(__dirname, "../public"), { maxAge: 31557600000 })
@@ -46,7 +49,6 @@ const myCors = cors({
 // preflight for all routes
 app.options('*', myCors);
 app.use(myCors);
-app.post(myCors);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

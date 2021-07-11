@@ -98,12 +98,12 @@ export async function verify(req: Request, res: Response, next: NextFunction): P
         .exec();
 
   // prefer the userId from a previous account with that email address
-  userId = userResult[1];
-  
-  if (!userId) {
+  if (!userResult[1]) {
     next(new Error('Could not find or produce a user id'));
     return;    
   }
+  
+  userId = userResult[1] as string;
 
   // add the email address to the list for this user
   client.sadd(`user-email:${userId}`, res.locals.email);
