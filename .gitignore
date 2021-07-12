@@ -3,6 +3,8 @@ dist
 logs
 .env
 
+result
+
 *~
 \#*\#
 /.emacs.desktop
