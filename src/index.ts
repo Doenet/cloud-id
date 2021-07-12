@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import express, { Express, Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import helmet from 'helmet';

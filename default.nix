@@ -9,7 +9,10 @@ mkYarnPackage rec {
     postBuild = ''
       NODE_ENV=production yarn run build
     '';
-
+    postInstall = ''
+      chmod +x $out/libexec/@doenet/cloud-id/deps/@doenet/cloud-id/dist/index.js
+    '';
+    
     meta = with pkgs.lib; {
       description = "id.doenet.cloud webservices";
       license = licenses.agpl3;
